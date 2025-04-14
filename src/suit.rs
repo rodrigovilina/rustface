@@ -13,7 +13,8 @@ impl Suit {
     [Self::Club, Self::Diamond, Self::Heart, Self::Spade]
   }
 
-  pub const fn front_color(&self) -> FrontColor {
+  #[allow(dead_code)]
+  pub const fn front_color(self) -> FrontColor {
     match self {
       Self::Diamond | Self::Heart => FrontColor::Red,
       Self::Club | Self::Spade => FrontColor::Black,
