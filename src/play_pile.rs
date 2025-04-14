@@ -6,7 +6,7 @@ pub struct PlayPile {
 }
 
 impl PlayPile {
-  pub fn empty() -> Self {
+  pub const fn empty() -> Self {
     Self { cards: vec![] }
   }
 
@@ -22,6 +22,7 @@ impl PlayPile {
     self.cards.first()
   }
 
+  #[allow(dead_code)]
   fn top_four_same_rank(&self) -> bool {
     if self.cards.len() < 4 {
       return false;
@@ -36,18 +37,14 @@ impl PlayPile {
   }
 
   pub fn can_play_any(&self, cards: &[Card]) -> bool {
-    cards.iter().any(|card| self.can_play_card(card))
+    cards.iter().any(|card| self.can_play_card(*card))
   }
 
-  pub fn can_play_card(&self, card: &Card) -> bool {
-    if let Some(top_card) = self.top_card() {
-      Self::can_play_against(top_card, card)
-    } else {
-      true
-    }
+  pub fn can_play_card(&self, card: Card) -> bool {
+    self.top_card().is_none_or(|top_card| Self::can_play_against(*top_card, card))
   }
 
-  fn can_play_against(top: &Card, card: &Card) -> bool {
+  fn can_play_against(top: Card, card: Card) -> bool {
     match (top, card) {
       (Card::Regular { rank: Rank::Ten, .. }, _) => false,
       (_, Card::Joker { .. }) => true,
@@ -59,10 +56,10 @@ impl PlayPile {
     }
   }
 
-  fn can_play_rank(top: &Rank, card: &Rank) -> bool {
+  fn can_play_rank(top: Rank, card: Rank) -> bool {
     match (top, card) {
       (Rank::Ten, _) => false,
-      (Rank::Seven, b) => *b <= Rank::Seven,
+      (Rank::Seven, b) => b <= Rank::Seven,
       (_, Rank::Two) => true,
       (a, b) => a <= b,
     }
