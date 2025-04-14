@@ -6,10 +6,11 @@ pub struct DiscardPile {
 }
 
 impl DiscardPile {
-  pub fn empty() -> Self {
+  pub const fn empty() -> Self {
     Self { cards: vec![] }
   }
 
+  #[allow(dead_code)]
   pub fn discard(&mut self, play_pile: &mut PlayPile) {
     self.cards.extend(play_pile.cards());
     play_pile.discard();
