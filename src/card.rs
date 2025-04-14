@@ -17,23 +17,25 @@ pub enum Card {
 }
 
 impl Card {
-  const fn back_color(&self) -> BackColor {
+  #[allow(dead_code)]
+  const fn back_color(self) -> BackColor {
     match self {
-      Self::Joker { back_color, .. } | Self::Regular { back_color, .. } => *back_color,
+      Self::Joker { back_color, .. } | Self::Regular { back_color, .. } => back_color,
     }
   }
 
-  const fn front_color(&self) -> FrontColor {
+  #[allow(dead_code)]
+  const fn front_color(self) -> FrontColor {
     match self {
       Self::Regular { suit, .. } => suit.front_color(),
-      Self::Joker { front_color, .. } => *front_color,
+      Self::Joker { front_color, .. } => front_color,
     }
   }
 
-  pub fn rank(&self) -> Option<Rank> {
+  pub const fn rank(self) -> Option<Rank> {
     match self {
-      Card::Regular { rank, .. } => Some(rank.clone()),
-      Card::Joker { .. } => None,
+      Self::Regular { rank, .. } => Some(rank),
+      Self::Joker { .. } => None,
     }
   }
 
@@ -41,7 +43,8 @@ impl Card {
   ///
   /// [`Regular`]: Card::Regular
   #[must_use]
-  pub fn is_regular(&self) -> bool {
+  #[allow(dead_code)]
+  pub const fn is_regular(self) -> bool {
     matches!(self, Self::Regular { .. })
   }
 
@@ -49,7 +52,8 @@ impl Card {
   ///
   /// [`Joker`]: Card::Joker
   #[must_use]
-  pub fn is_joker(&self) -> bool {
+  #[allow(dead_code)]
+  pub const fn is_joker(self) -> bool {
     matches!(self, Self::Joker { .. })
   }
 }
@@ -57,18 +61,18 @@ impl Card {
 impl fmt::Display for Card {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     match self {
-      Card::Regular {
+      Self::Regular {
         rank,
         suit,
         back_color,
       } => {
-        write!(f, "{:?} of {:?} ({:?})", rank, suit, back_color)
+        write!(f, "{rank:?} of {suit:?} ({back_color:?})")
       }
-      Card::Joker {
+      Self::Joker {
         back_color,
         front_color,
       } => {
-        write!(f, "{:?} Joker ({:?})", front_color, back_color)
+        write!(f, "{front_color:?} Joker ({back_color:?})")
       }
     }
   }
