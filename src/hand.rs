@@ -6,7 +6,7 @@ pub struct Hand {
 }
 
 impl Hand {
-  pub fn new(cards: Vec<Card>) -> Self {
+  pub const fn new(cards: Vec<Card>) -> Self {
     Self { cards }
   }
 
@@ -14,10 +14,14 @@ impl Hand {
     &self.cards
   }
 
-  pub fn remove(&mut self, card: &Card) {
-    if let Some(index) = self.cards.iter().position(|c| c == card) {
+  pub fn remove(&mut self, card: Card) {
+    if let Some(index) = self.cards.iter().position(|c| *c == card) {
       self.cards.remove(index);
     }
+  }
+
+  pub fn draw(&mut self, card: Card) {
+    self.cards.extend([card]);
   }
 
   pub fn take(&mut self, play_pile: &mut PlayPile) {
