@@ -8,7 +8,7 @@ pub struct Player {
 }
 
 impl Player {
-  pub fn new(face_up: FaceUpHand, face_down: FaceDownHand, hand: Hand) -> Self {
+  pub const fn new(face_up: FaceUpHand, face_down: FaceDownHand, hand: Hand) -> Self {
     Self {
       face_up,
       face_down,
@@ -16,11 +16,11 @@ impl Player {
     }
   }
 
-  pub fn hand(&self) -> &Hand {
+  pub const fn hand(&self) -> &Hand {
     &self.hand
   }
 
-  pub fn hand_mut(&mut self) -> &mut Hand {
+  pub const fn hand_mut(&mut self) -> &mut Hand {
     &mut self.hand
   }
 }
