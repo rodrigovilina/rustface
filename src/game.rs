@@ -9,6 +9,7 @@ use {
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum Direction {
   Left,
+  #[allow(dead_code)]
   Right,
 }
 
@@ -26,9 +27,7 @@ impl Game {
   pub fn new() -> Self {
     let mut deck: Deck = Deck::complete();
     deck.shuffle();
-    let player1: Player = deck.create_player();
-    let player2: Player = deck.create_player();
-    let players = vec![player1, player2];
+    let players = vec![deck.create_player(), deck.create_player()];
     let discard_pile: DiscardPile = DiscardPile::empty();
     let play_pile: PlayPile = PlayPile::empty();
     let direction: Direction = Direction::Left;
@@ -44,8 +43,8 @@ impl Game {
 
   pub fn take_turn(&mut self) {
     self.print_choices();
-    let mut player: &mut Player = &mut self.players[self.current_turn as usize];
-    let mut hand: &mut Hand = player.hand_mut();
+    let player: &mut Player = &mut self.players[self.current_turn as usize];
+    let hand: &mut Hand = player.hand_mut();
     let cards: Vec<Card> = hand.cards().to_vec();
 
     if self.play_pile.can_play_any(&cards) {
@@ -56,10 +55,13 @@ impl Game {
         .filter(|&i| i < cards.len())
       {
         let selected: &Card = &cards[index];
-        println!("You picked: {}", selected);
+        println!("You picked: {selected}");
 
-        if self.play_pile.can_play_card(selected) {
-          hand.remove(selected);
+        if self.play_pile.can_play_card(*selected) {
+          hand.remove(*selected);
+          if let Some(card) = self.deck.pop() {
+            hand.draw(card);
+          }
           self.play_pile.play(*selected);
           // pick hand from deck
           println!("you played the card");
@@ -67,7 +69,7 @@ impl Game {
           dbg!(&self.play_pile);
           self.increase_turn();
         } else {
-          println!("you cannot play the card")
+          println!("you cannot play the card");
         }
       } else {
         println!("Invalid choice!");
@@ -79,12 +81,12 @@ impl Game {
     }
   }
 
-  fn increase_turn(&mut self) {
+  const fn increase_turn(&mut self) {
     self.current_turn += 1;
     self.current_turn %= self.players.len() as u8;
   }
 
-  fn decrease_turn(&mut self) {
+  const fn decrease_turn(&mut self) {
     match self.current_turn {
       0 => self.current_turn = self.players.len() as u8 - 1,
       _ => self.current_turn -= 1,
@@ -114,4 +116,10 @@ impl Game {
     let choice: Option<usize> = input.trim().parse::<usize>().ok();
     choice
   }
+}
+
+impl Default for Game {
+    fn default() -> Self {
+        Self::new()
+    }
 }
