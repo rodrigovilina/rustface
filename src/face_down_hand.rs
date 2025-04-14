@@ -6,7 +6,7 @@ pub struct FaceDownHand {
 }
 
 impl FaceDownHand {
-  pub fn new(cards: Vec<Card>) -> Self {
+  pub const fn new(cards: Vec<Card>) -> Self {
     Self { cards }
   }
 }
