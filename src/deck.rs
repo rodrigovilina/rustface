@@ -12,6 +12,7 @@ pub struct Deck {
 }
 
 impl Deck {
+  #[allow(dead_code)]
   const fn empty() -> Self {
     Self { cards: vec![] }
   }
@@ -24,7 +25,7 @@ impl Deck {
 
   pub fn create_player(&mut self) -> Player {
     let taken: Vec<Card> = self.cards.drain(0..9).collect();
-    let mut chunks = taken.chunks(3).map(|c| c.to_vec());
+    let mut chunks = taken.chunks(3).map(<[Card]>::to_vec);
 
     let face_down: FaceDownHand = FaceDownHand::new(chunks.next().unwrap());
     let face_up: FaceUpHand = FaceUpHand::new(chunks.next().unwrap());
