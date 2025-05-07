@@ -48,7 +48,7 @@ impl Deck {
       .into_iter()
       .flat_map(|back_color| {
         Suit::all().into_iter().flat_map(move |suit| {
-          Rank::all().into_iter().map(move |number| Card::Regular{
+          Rank::all().into_iter().map(move |number| Card::Regular {
             rank: number,
             suit,
             back_color,
