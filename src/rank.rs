@@ -33,4 +33,12 @@ impl Rank {
       Self::K,
     ]
   }
+
+  pub const fn is_seven(self) -> bool {
+    matches!(self, Self::Seven)
+  }
+
+  pub const fn is_ten(self) -> bool {
+    matches!(self, Self::Ten)
+  }
 }
