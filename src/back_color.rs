@@ -9,3 +9,7 @@ impl BackColor {
     [Self::Blue, Self::Red]
   }
 }
+
+pub trait HasBackColor {
+  fn back_color(&self) -> BackColor;
+}
