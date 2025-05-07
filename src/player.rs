@@ -1,4 +1,4 @@
-use crate::{face_down_hand::FaceDownHand, face_up_hand::FaceUpHand, hand::Hand};
+use crate::{card::Card, face_down_hand::FaceDownHand, face_up_hand::FaceUpHand, hand::Hand};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Player {
@@ -22,5 +22,9 @@ impl Player {
 
   pub const fn hand_mut(&mut self) -> &mut Hand {
     &mut self.hand
+  }
+
+  pub fn take_shit(&mut self, cards: Vec<Card>) {
+    self.hand.cards_mut().extend(cards);
   }
 }
