@@ -22,14 +22,15 @@ impl PlayPile {
     self.cards.first()
   }
 
-  #[allow(dead_code)]
-  fn top_four_same_rank(&self) -> bool {
+  pub fn top_four_same_rank(&self) -> bool {
     if self.cards.len() < 4 {
       return false;
     }
 
     let first_rank = &self.cards[0].rank();
-    self.cards[1..4].iter().all(|card| &card.rank() == first_rank)
+    self.cards[1..4]
+      .iter()
+      .all(|card| &card.rank() == first_rank)
   }
 
   pub fn play(&mut self, card: Card) {
@@ -41,17 +42,20 @@ impl PlayPile {
   }
 
   pub fn can_play_card(&self, card: Card) -> bool {
-    self.top_card().is_none_or(|top_card| Self::can_play_against(*top_card, card))
+    self
+      .top_card()
+      .is_none_or(|top_card| Self::can_play_against(*top_card, card))
   }
 
   fn can_play_against(top: Card, card: Card) -> bool {
     match (top, card) {
-      (Card::Regular { rank: Rank::Ten, .. }, _) => false,
-      (_, Card::Joker { .. }) => true,
       (Card::Joker { .. }, Card::Regular { .. }) => false,
+      (Card::Joker { .. } | Card::Regular { .. }, Card::Joker { .. }) => true,
       (
         Card::Regular { rank: top_rank, .. },
-        Card::Regular { rank: card_rank, .. },
+        Card::Regular {
+          rank: card_rank, ..
+        },
       ) => Self::can_play_rank(top_rank, card_rank),
     }
   }
@@ -60,7 +64,7 @@ impl PlayPile {
     match (top, card) {
       (Rank::Ten, _) => false,
       (Rank::Seven, b) => b <= Rank::Seven,
-      (_, Rank::Two) => true,
+      (_, Rank::Ten | Rank::Two) => true,
       (a, b) => a <= b,
     }
   }
