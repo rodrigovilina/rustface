@@ -1,23 +1,22 @@
-use {
-  crate::{
-    card::Card, deck::Deck, discard_pile::DiscardPile, hand::Hand, play_pile::PlayPile,
-    player::Player,
-  },
-  std::io::{self, Write},
+use crate::{
+  card::Card,
+  current_hand::CurrentHand,
+  current_player::NextPlayer,
+  current_turn::{CurrentTurn, Turn},
+  deck::Deck,
+  direction::{Direction, InvertDirection},
+  discard_pile::DiscardPile,
+  hand::Hand,
+  pick_card::PickCard,
+  play_pile::PlayPile,
+  player::Player,
+  take_shit::TakeShit,
 };
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-enum Direction {
-  Left,
-  #[allow(dead_code)]
-  Right,
-}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Game {
-  current_turn: u8,
+  current_turn: CurrentTurn,
   deck: Deck,
-  direction: Direction,
   discard_pile: DiscardPile,
   play_pile: PlayPile,
   players: Vec<Player>,
@@ -30,96 +29,144 @@ impl Game {
     let players = vec![deck.create_player(), deck.create_player()];
     let discard_pile: DiscardPile = DiscardPile::empty();
     let play_pile: PlayPile = PlayPile::empty();
-    let direction: Direction = Direction::Left;
+    let current_turn: CurrentTurn = CurrentTurn::new(players.len() as u8);
     Self {
-      current_turn: 0,
+      current_turn,
       deck,
-      direction,
       discard_pile,
       play_pile,
       players,
     }
   }
 
+  pub const fn current_turn(&self) -> CurrentTurn {
+    self.current_turn
+  }
+
+  pub const fn current_turn_mut(&mut self) -> &mut CurrentTurn {
+    &mut self.current_turn
+  }
+
+  pub const fn direction(&self) -> Direction {
+    self.current_turn().direction()
+  }
+
+  pub const fn play_pile(&self) -> &PlayPile {
+    &self.play_pile
+  }
+
+  pub const fn play_pile_mut(&mut self) -> &mut PlayPile {
+    &mut self.play_pile
+  }
+
+  pub const fn players(&self) -> &Vec<Player> {
+    &self.players
+  }
+
+  pub const fn players_mut(&mut self) -> &mut Vec<Player> {
+    &mut self.players
+  }
+
   pub fn take_turn(&mut self) {
-    self.print_choices();
-    let player: &mut Player = &mut self.players[self.current_turn as usize];
-    let hand: &mut Hand = player.hand_mut();
-    let cards: Vec<Card> = hand.cards().to_vec();
+    if self.can_play_any() {
+      self.play_turn();
+    } else {
+      self.take_shit();
+    }
+  }
 
-    if self.play_pile.can_play_any(&cards) {
-      let choice: Option<usize> = Self::read_choice();
+  fn play(&mut self, selected: Card) {
+    println!("Adding the following card to the play pile: {selected}");
+    self.play_pile.play(selected);
+  }
 
-      if let Some(index) = choice
-        .and_then(|n| n.checked_sub(1))
-        .filter(|&i| i < cards.len())
-      {
-        let selected: &Card = &cards[index];
-        println!("You picked: {selected}");
+  pub fn current_hand_cards(&mut self) -> Vec<Card> {
+    self.current_hand().cards().to_vec()
+  }
 
-        if self.play_pile.can_play_card(*selected) {
-          hand.remove(*selected);
+  fn can_play_any(&mut self) -> bool {
+    let cards: Vec<Card> = self.current_hand_cards();
+    self.play_pile.can_play_any(&cards)
+  }
+
+  fn invert_if_seven(&mut self, card: Card) {
+    if card.is_seven() {
+      self.invert_direction();
+    }
+  }
+
+  fn discard_if_ten(&mut self) -> bool {
+    self
+      .play_pile
+      .top_card()
+      .map(|card| card.is_ten())
+      .filter(|b| *b)
+      .inspect(|_| self.discard_play_pile())
+      .unwrap_or(false)
+  }
+
+  fn give_shit_if_joker(&mut self) -> bool {
+    self
+      .play_pile
+      .top_card()
+      .map(|card| card.is_joker())
+      .filter(|b| *b)
+      .inspect(|_| {
+        let cards = self.play_pile.cards();
+        self.next_player().take_shit(cards);
+        self.play_pile.discard();
+      })
+      .unwrap_or(false)
+  }
+
+  fn burn_shit(&mut self) -> bool {
+    if self.play_pile.top_four_same_rank() {
+      self.discard_play_pile();
+      true
+    } else {
+      false
+    }
+  }
+
+  fn discard_play_pile(&mut self) {
+    self.discard_pile.discard(self.play_pile.cards());
+    self.play_pile.discard();
+  }
+
+  fn play_turn(&mut self) {
+    if let Some(selected) = self.pick_card() {
+      if self.play_pile.can_play_card(selected) {
+        let turn = self.current_turn().turn() as usize;
+        let player: &mut Player = &mut self.players[turn];
+        let hand: &mut Hand = player.hand_mut();
+        hand.remove(selected);
+        if hand.cards().len() < 3 {
           if let Some(card) = self.deck.pop() {
             hand.draw(card);
           }
-          self.play_pile.play(*selected);
-          // pick hand from deck
-          println!("you played the card");
-          dbg!(&player.hand());
-          dbg!(&self.play_pile);
+        }
+
+        self.play(selected);
+        self.invert_if_seven(selected);
+        let played_ten: bool = self.discard_if_ten();
+        let played_joker: bool = self.give_shit_if_joker();
+        let shit_burnt: bool = self.burn_shit();
+
+        println!("you played the card");
+        dbg!(self.direction());
+        dbg!(&self.play_pile);
+        if !played_ten && !played_joker && !shit_burnt {
           self.increase_turn();
-        } else {
-          println!("you cannot play the card");
         }
       } else {
-        println!("Invalid choice!");
+        println!("you cannot play the card");
       }
-    } else {
-      println!("You cannot play any of your cards");
-      hand.take(&mut self.play_pile);
-      self.decrease_turn();
     }
-  }
-
-  const fn increase_turn(&mut self) {
-    self.current_turn += 1;
-    self.current_turn %= self.players.len() as u8;
-  }
-
-  const fn decrease_turn(&mut self) {
-    match self.current_turn {
-      0 => self.current_turn = self.players.len() as u8 - 1,
-      _ => self.current_turn -= 1,
-    }
-  }
-
-  fn print_choices(&self) {
-    let player: &Player = &self.players[self.current_turn as usize];
-    let hand: &Hand = player.hand();
-    let cards: &[Card] = hand.cards();
-
-    println!("Pick a card:");
-    for (i, card) in cards.iter().enumerate() {
-      println!("{}: {}", i + 1, card);
-    }
-  }
-
-  fn read_choice() -> Option<usize> {
-    print!("Enter the number of the card you want: ");
-    io::stdout().flush().unwrap(); // Ensure prompt shows before input
-
-    let mut input: String = String::new();
-    io::stdin()
-      .read_line(&mut input)
-      .expect("Failed to read line");
-
-    let choice: Option<usize> = input.trim().parse::<usize>().ok();
-    choice
   }
 }
 
 impl Default for Game {
-    fn default() -> Self {
-        Self::new()
-    }
+  fn default() -> Self {
+    Self::new()
+  }
 }
