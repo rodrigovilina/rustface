@@ -1,4 +1,4 @@
-use crate::{card::Card, play_pile::PlayPile};
+use crate::card::Card;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Hand {
@@ -14,6 +14,10 @@ impl Hand {
     &self.cards
   }
 
+  pub const fn cards_mut(&mut self) -> &mut Vec<Card> {
+    &mut self.cards
+  }
+
   pub fn remove(&mut self, card: Card) {
     if let Some(index) = self.cards.iter().position(|c| *c == card) {
       self.cards.remove(index);
@@ -24,8 +28,7 @@ impl Hand {
     self.cards.extend([card]);
   }
 
-  pub fn take(&mut self, play_pile: &mut PlayPile) {
-    self.cards.extend(play_pile.cards());
-    play_pile.discard();
+  pub fn extend(&mut self, cards: Vec<Card>) {
+    self.cards.extend(cards);
   }
 }
