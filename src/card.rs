@@ -39,22 +39,25 @@ impl Card {
     }
   }
 
-  /// Returns `true` if the card is [`Regular`].
-  ///
-  /// [`Regular`]: Card::Regular
   #[must_use]
-  #[allow(dead_code)]
-  pub const fn is_regular(self) -> bool {
-    matches!(self, Self::Regular { .. })
-  }
-
-  /// Returns `true` if the card is [`Joker`].
-  ///
-  /// [`Joker`]: Card::Joker
-  #[must_use]
-  #[allow(dead_code)]
   pub const fn is_joker(self) -> bool {
     matches!(self, Self::Joker { .. })
+  }
+
+  #[must_use]
+  pub const fn is_seven(self) -> bool {
+    match self {
+      Self::Regular { rank, .. } => rank.is_seven(),
+      Self::Joker { .. } => false,
+    }
+  }
+
+  #[must_use]
+  pub const fn is_ten(self) -> bool {
+    match self {
+      Self::Regular { rank, .. } => rank.is_ten(),
+      Self::Joker { .. } => false,
+    }
   }
 }
 
