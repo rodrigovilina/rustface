@@ -8,17 +8,23 @@
 
 mod back_color;
 mod card;
+mod current_hand;
+mod current_player;
+mod current_turn;
 mod deck;
+mod direction;
 mod discard_pile;
 mod face_down_hand;
 mod face_up_hand;
 mod front_color;
 mod game;
 mod hand;
+mod pick_card;
 mod play_pile;
 mod player;
 mod rank;
 mod suit;
+mod take_shit;
 
 use game::Game;
 
