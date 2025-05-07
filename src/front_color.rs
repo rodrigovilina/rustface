@@ -9,3 +9,7 @@ impl FrontColor {
     [Self::Black, Self::Red]
   }
 }
+
+pub trait HasFrontColor {
+  fn front_color(&self) -> FrontColor;
+}
