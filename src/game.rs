@@ -140,10 +140,10 @@ impl Game {
         let player: &mut Player = &mut self.players[turn];
         let hand: &mut Hand = player.hand_mut();
         hand.remove(selected);
-        if hand.cards().len() < 3 {
-          if let Some(card) = self.deck.pop() {
-            hand.draw(card);
-          }
+        if hand.cards().len() < 3
+          && let Some(card) = self.deck.pop()
+        {
+          hand.draw(card);
         }
 
         self.play(selected);
