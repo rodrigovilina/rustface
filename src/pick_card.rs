@@ -45,9 +45,11 @@ impl Game {
 
   fn read_choice() -> Option<usize> {
     print!("Enter the number of the card you want: ");
-    io::stdout().flush().unwrap(); // Ensure prompt shows before input
+    #[allow(clippy::expect_used)]
+    io::stdout().flush().expect("Failed to flush stdout");
 
     let mut input: String = String::new();
+    #[allow(clippy::expect_used)]
     io::stdin()
       .read_line(&mut input)
       .expect("Failed to read line");
