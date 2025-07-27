@@ -10,6 +10,7 @@ impl BackColor {
   }
 }
 
+#[allow(dead_code)]
 pub trait HasBackColor {
   fn back_color(&self) -> BackColor;
 }
