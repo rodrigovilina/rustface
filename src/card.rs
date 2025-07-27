@@ -1,5 +1,5 @@
 use {
-  crate::{back_color::BackColor, front_color::FrontColor, rank::Rank, suit::Suit},
+  crate::{back_color::{BackColor, HasBackColor}, front_color::{FrontColor, HasFrontColor}, rank::Rank, suit::Suit},
   std::fmt,
 };
 
@@ -14,6 +14,23 @@ pub enum Card {
     back_color: BackColor,
     front_color: FrontColor,
   },
+}
+
+impl HasBackColor for Card {
+  fn back_color(&self) -> BackColor {
+    match self {
+      Self::Joker { back_color, .. } | Self::Regular { back_color, .. } => *back_color,
+    }
+  }
+}
+
+impl HasFrontColor for Card {
+  fn front_color(&self) -> FrontColor {
+    match self {
+      Self::Regular { suit, .. } => suit.front_color(),
+      Self::Joker { front_color, .. } => *front_color,
+    }
+  }
 }
 
 impl Card {
