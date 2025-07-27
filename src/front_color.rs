@@ -10,6 +10,7 @@ impl FrontColor {
   }
 }
 
+#[allow(dead_code)]
 pub trait HasFrontColor {
   fn front_color(&self) -> FrontColor;
 }
