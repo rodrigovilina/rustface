@@ -27,9 +27,9 @@ impl Deck {
     let taken: Vec<Card> = self.cards.drain(0..9).collect();
     let mut chunks = taken.chunks(3).map(<[Card]>::to_vec);
 
-    let face_down: FaceDownHand = FaceDownHand::new(chunks.next().unwrap());
-    let face_up: FaceUpHand = FaceUpHand::new(chunks.next().unwrap());
-    let hand: Hand = Hand::new(chunks.next().unwrap());
+    let face_down: FaceDownHand = FaceDownHand::new(chunks.next().expect("Not enough cards"));
+    let face_up: FaceUpHand = FaceUpHand::new(chunks.next().expect("Not enough cards"));
+    let hand: Hand = Hand::new(chunks.next().expect("Not enough cards"));
 
     Player::new(face_up, face_down, hand)
   }
