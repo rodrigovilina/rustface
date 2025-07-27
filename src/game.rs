@@ -26,10 +26,10 @@ impl Game {
   pub fn new() -> Self {
     let mut deck: Deck = Deck::complete();
     deck.shuffle();
-    let players = vec![deck.create_player(), deck.create_player()];
+    let players: Vec<Player> = vec![deck.create_player(), deck.create_player()];
     let discard_pile: DiscardPile = DiscardPile::empty();
     let play_pile: PlayPile = PlayPile::empty();
-    let current_turn: CurrentTurn = CurrentTurn::new(players.len() as u8);
+    let current_turn: CurrentTurn = CurrentTurn::new(2);
     Self {
       current_turn,
       deck,
